@@ -8,11 +8,16 @@
   </Target>
   <Target Name="CheckSubnauticaPath" DependsOnTargets="SubnauticaPathInvalid" Condition="!Exists($(SubnauticaPath))">
   </Target>
-  <PropertyGroup Condition="$(Configuration) == 'Debug' and $(OutputType) == 'Library' and '$(MSBuildProjectName)' != 'NitroxTest'">
+  <PropertyGroup Condition="$(Configuration) == 'Debug'">
     <OutputPath>$(SolutionDir)\bin\Debug\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration) == 'Release' and $(OutputType) == 'Library' and '$(MSBuildProjectName)' != 'NitroxTest'">
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
     <OutputPath>$(SolutionDir)\bin\Release\</OutputPath>
   </PropertyGroup>
-  <!--<Import Project="$(SolutionDir)PostBuild.targets" />-->
+
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Mod'))">
+    <OutputPath>$(OutputPath)\Mods\$(MSBuildProjectName)</OutputPath>
+  </PropertyGroup>
+  
+  <Import Project="$(SolutionDir)PostBuild.targets" />
 </Project>

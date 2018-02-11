@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
+  <Target Name="Deploy" AfterTargets="Build">
+    <CallTarget Condition="'$(MSBuildProjectName)' != 'BuildHelper' AND !$(MSBuildProjectName.Contains('Mod'))" Targets="DeployModSystem"/>
+    <CallTarget Condition="'$(MSBuildProjectName)' == 'BuildHelper'" Targets="DeployBuildHelper"/>
+    <CallTarget Condition="$(MSBuildProjectName.Contains('Mod'))" Targets="DeployMods"/>
+  </Target>
+  
+  <Target Name="DeployModSystem">    
+    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="CompiledAssemblies" />
+    </MSBuild>
+    <ItemGroup>
+      <CompiledAssemblies Include="$(OutputPath)\$(TargetFileName)" />
+    </ItemGroup>
+    <Message Text="Copying library files to: $(SubnauticaPath)" Importance="high"/>
+    <Message Text="@(CompiledAssemblies)" Importance="high"/>
+    <Copy SourceFiles="@(CompiledAssemblies)" DestinationFolder="$(SubnauticaPath)" Retries="0" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="DeployBuildHelper">
+    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="BuildHelperFile" />
+    </MSBuild>
+    <ItemGroup>
+      <BuildHelperFile Include="$(OutputPath)\$(TargetFileName)" />
+    </ItemGroup>
+    <Message Text="Copying BuildHelper to solution directory." Importance="high"/>
+    <Copy SourceFiles="@(BuildHelperFile)" DestinationFolder="$(SolutionDir)" Retries="0" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="DeployMods">
+    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="ModFiles" />
+    </MSBuild>
+    <ItemGroup>
+      <ModFiles Include="$(OutputPath)\$(TargetFileName)" />
+    </ItemGroup>
+    <Message Text="Copying mods to Subnautica Mods folder." Importance="high"/>
+    <Copy SourceFiles="$(OutputPath)\$(TargetFileName)" DestinationFolder="$(SubnauticaPath)/Mods/$(MSBuildProjectName)" Retries="0" ContinueOnError="true" />
+  </Target>
+  
+</Project>
