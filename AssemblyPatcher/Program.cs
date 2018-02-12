@@ -37,7 +37,20 @@ namespace AssemblyPatcher
 
         static void Main(string[] args)
         {
-            PatchMainAssembly();
+            try
+            {
+                PatchMainAssembly();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to patch the main assembly file:");
+                Console.Write(e.StackTrace);
+                Console.ReadKey(true);
+                return;
+            }
+
+            Console.Write("Patching complete!");
+            Console.ReadKey(true);
         }
 
         static void PatchMainAssembly()
@@ -81,6 +94,7 @@ namespace AssemblyPatcher
             // Create the call instruction to fire the Bootstrap.Initialize() function
             instructions.Insert(index, OpCodes.Call.ToInstruction(bootstrapInitialize));
 
+            Console.WriteLine("Starting to patch individual mods...");
             PatchMods(assemblyModule);
 
             // Same the assembly - overwriting Assembly-CSharp.dll and leaving the .original backup pristine
@@ -100,12 +114,13 @@ namespace AssemblyPatcher
                     var patch = (IPatch)Activator.CreateInstance(modType);
                     if (patch.InitializePatch(module))
                     {
-                        //Debug.Log("Successfully installed patch for " + modType.FullName);
+                        Console.WriteLine("Successfully installed patch for " + modType.FullName);
                     }
 
                 } catch (Exception e)
                 {
-                    //Debug.Log("Failed to patch: " + modType.FullName);
+                    Console.WriteLine("Failed to patch: " + modType.FullName);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }

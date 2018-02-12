@@ -6,16 +6,9 @@
     <CallTarget Condition="$(MSBuildProjectName.Contains('Mod'))" Targets="DeployMods"/>
   </Target>
   
-  <Target Name="DeployModSystem">    
-    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="CompiledAssemblies" />
-    </MSBuild>
-    <ItemGroup>
-      <CompiledAssemblies Include="$(OutputPath)\$(TargetFileName)" />
-    </ItemGroup>
-    <Message Text="Copying library files to: $(SubnauticaPath)" Importance="high"/>
-    <Message Text="@(CompiledAssemblies)" Importance="high"/>
-    <Copy SourceFiles="@(CompiledAssemblies)" DestinationFolder="$(SubnauticaPath)" Retries="0" ContinueOnError="true" />
+  <Target Name="DeployModSystem">
+    <Message Text="Copying mod system files to: $(SubnauticaPath)" Importance="high"/>
+    <Copy SourceFiles="$(OutputPath)\$(TargetFileName)" DestinationFolder="$(SubnauticaPath)" Retries="0" ContinueOnError="true" />
   </Target>
 
   <Target Name="DeployBuildHelper">
