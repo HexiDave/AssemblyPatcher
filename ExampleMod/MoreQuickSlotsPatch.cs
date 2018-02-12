@@ -31,13 +31,13 @@ namespace ExampleMod
         public void CreateButtonSlotEnums(ModuleDef module)
         {
             // GameInput -> Button
-            var gameInputType = module.GetTypes().Single(s => s.Name == "GameInput");
-            var gameInputButtonType = gameInputType.NestedTypes.Single(s => s.Name == "Button");
+            var gameInputType = module.Find("GameInput", false);
+            var gameInputButtonType = module.Find("GameInput/Button", false);
             var maxButtonValue = gameInputButtonType.Fields.Where(f => f.Constant != null).Max(f => (int)f.Constant.Value);
             var buttonTypeSig = gameInputButtonType.GetEnumUnderlyingType();
 
             // QuickSlots
-            var quickSlotStaticConstructor = module.GetTypes().Single(s => s.Name == "QuickSlots").FindStaticConstructor();
+            var quickSlotStaticConstructor = module.Find("QuickSlots", false).FindStaticConstructor();
 
             var totalQuickSlots = TopExistingSlot + QuickSlotsToAdd;
             var quickSlotInstructions = quickSlotStaticConstructor.Body.Instructions;
@@ -106,7 +106,7 @@ namespace ExampleMod
             // For now, I'm just building a new one from scratch - a new game in Creative Mode will not have the starting gear.
 
             // Player
-            var playerType = module.GetTypes().Single(s => s.Name == "Player");
+            var playerType = module.Find("Player", false);
             playerType.Attributes &= ~TypeAttributes.BeforeFieldInit;
             var playerStaticConstructor = playerType.FindStaticConstructor();
 
@@ -168,9 +168,10 @@ namespace ExampleMod
 
         public void AdjustInventorySlotsCount(ModuleDef module, int totalQuickSlots)
         {
-            var inventoryAwake = module.GetTypes().Single(x => x.Name == "Inventory").FindMethod("Awake");
+            var inventoryAwake = module.Find("Inventory", false).FindMethod("Awake");
             var inventoryInstructions = inventoryAwake.Body.Instructions;
 
+            // TODO: Refactor this with something in PatchHelper
             var instructionIndex = inventoryInstructions
                 .Select((instruction, index) => new { instruction, index })
                 .Where(x => x.instruction.OpCode == OpCodes.Ldfld && (x.instruction.Operand as IMemberRef).Name == "rightHandSlot")

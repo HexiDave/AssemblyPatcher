@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,9 +43,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConstructableHelper.cs" />
+    <Compile Include="CrafterLogicHelper.cs" />
     <Compile Include="ExampleMod.cs" />
     <Compile Include="MoreQuickSlotsPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PullFromContainersPatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BootstrapLib\BootstrapLib.csproj">
