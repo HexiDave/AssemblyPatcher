@@ -21,16 +21,9 @@
     <Message Text="Copying BuildHelper to solution directory." Importance="high"/>
     <Copy SourceFiles="@(BuildHelperFile)" DestinationFolder="$(SolutionDir)" Retries="0" ContinueOnError="true" />
   </Target>
-
-  <Target Name="DeployMods">
-    <MSBuild Projects="@(ProjectReference)" Targets="Build" BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="ModFiles" />
-    </MSBuild>
-    <ItemGroup>
-      <ModFiles Include="$(OutputPath)\$(TargetFileName)" />
-    </ItemGroup>
-    <Message Text="Copying mods to Subnautica Mods folder." Importance="high"/>
-    <Copy SourceFiles="$(OutputPath)\$(TargetFileName)" DestinationFolder="$(SubnauticaPath)/Mods/$(MSBuildProjectName)" Retries="0" ContinueOnError="true" />
-  </Target>
   
+  <Target Name="DeployMods">
+    <Message Text="Copying mods to Subnautica Mods folder." Importance="high"/>
+    <Copy SourceFiles="$(OutputPath)$(TargetFileName)" DestinationFolder="$(SubnauticaPath)/Mods/$(MSBuildProjectName)" Retries="0" ContinueOnError="true" />
+  </Target>
 </Project>

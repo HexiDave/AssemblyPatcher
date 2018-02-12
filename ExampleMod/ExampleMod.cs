@@ -11,11 +11,7 @@ namespace ExampleMod
     {
         public bool InitializePatch(ModuleDefMD module)
         {
-            
-
             return true;
         }
-
-        
     }
 }

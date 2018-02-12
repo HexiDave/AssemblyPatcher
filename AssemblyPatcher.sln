@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyPatcher", "AssemblyPatcher\AssemblyPatcher.csproj", "{9A88B43E-E5C1-40C3-8F03-A501A9E392B5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{50CA72D6-6CE3-4458-986C-520A8BC31031} = {50CA72D6-6CE3-4458-986C-520A8BC31031}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dnlib", "Libraries\dnlib\src\dnlib.csproj", "{FDFC1237-143F-4919-8318-4926901F4639}"
 EndProject
