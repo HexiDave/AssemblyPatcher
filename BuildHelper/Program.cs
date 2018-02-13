@@ -1,44 +1,119 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Xml;
 
+/**
+ * This program is designed to seek out the Steam install of Subnautica for the Managed Assemblies directory. 
+ * If found, it will then update the Visual Studio solution's build system to use it instead of manually updating it.
+ */
+
 namespace BuildHelper
 {
     class Program
     {
-        static readonly Regex PathRegex = new Regex(@"^\s+""\d+""\s+""([^""]*)""");
+        /// <summary>
+        /// Magic numbers are bad - let's have some exit codes
+        /// </summary>
+        enum ExitCode
+        {
+            Success = 0,
 
-        static void Main(string[] args)
+            // Just reporting info, not really an error
+            Formal,
+
+            Error = -1
+        }
+
+        static int Main(string[] args)
+        {
+            bool waitBeforeExit = true;
+
+            // Check for arguments
+            if (args != null && args.Length != 0)
+            {
+                switch(args[0].ToLower())
+                {
+                    // Wanna know what this program does
+                    case "/?":
+                        Console.WriteLine("Finds the Subnautica folder and updates ManagedPath.targets with it's location.");
+                        Console.WriteLine("\n\nUse /n or /nowait to skip the wait on completion");
+                        return (int)ExitCode.Formal;
+                    case "/n":
+                    case "/nowait":
+                        // Useful for automation
+                        waitBeforeExit = false;
+                        break;
+                    default:
+                        Console.WriteLine(string.Format("Unknown argument: {0}", args[0]));
+                        Console.WriteLine("Aborting...");
+
+                        return (int)ExitCode.Error;
+                }
+            }
+
+            // Let's go!
+            bool result = Start();
+
+            Console.Write("\nPress any key to continue.");
+
+            // Just in case this is launched from outside a console - give the user time to see what happened
+            if (waitBeforeExit)
+            {
+                Console.ReadKey(true);
+            }
+
+            return (int)(result ? ExitCode.Success : ExitCode.Error);
+        }
+
+        /// <summary>
+        /// Start searching for the Subnautica install to update the ManagedPath.targets path
+        /// </summary>
+        static bool Start()
         {
             string steamPath;
             try
             {
+                // Find Steam
                 steamPath = GetSteamInstallPath();
-            } catch
+            }
+            catch
             {
-                Console.Write("Failed to get the Steam install path from the registry - Aborting.");
-                Console.ReadKey(true);
-                return;
+                // Busted install or security problem? Either way, we're not being helpful today.
+                Console.WriteLine("Failed to get the Steam install path from the registry - Aborting.");
+                return false;
             }
 
+            // Try the standard path at the install location
             string subnauticaManagedPath = GetSubnauticaManagedPath(steamPath);
-            if (Directory.Exists(subnauticaManagedPath))
+
+            // Not in the normal place
+            if (!Directory.Exists(subnauticaManagedPath))
             {
-                BuildTargets(subnauticaManagedPath);
+                // Time to get fancy...
+                subnauticaManagedPath = SearchInLibrariesForPath(steamPath);
             }
 
-            SearchInLibraries(steamPath);
+            // Found a valid path
+            if (subnauticaManagedPath != null)
+            {
+                // Update the ManagedPath.targets file
+                UpdateManagedPathTargets(subnauticaManagedPath);
+                return true;
+            }
 
-            Console.Write("Failed to find a valid Subnautica install. You're on your own!");
-            Console.ReadKey(true);
+            // Maybe some other type of Subnautica install or another issue.
+            Console.WriteLine("Failed to find a valid Subnautica install. You're on your own!");
+
+            return false;
         }
 
+        /// <summary>
+        /// Read the user Windows registry for the steam install
+        /// </summary>
+        /// <returns></returns>
         static string GetSteamInstallPath()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam"))
@@ -47,54 +122,106 @@ namespace BuildHelper
             }
         }
 
+        /// <summary>
+        /// Utility to get the Subnautica install path from a Steam library path
+        /// </summary>
+        /// <param name="libraryPath">Steam library path</param>
+        /// <returns></returns>
         static string GetSubnauticaManagedPath(string libraryPath)
         {
             return Path.GetFullPath(libraryPath + @"\steamapps\common\Subnautica\Subnautica_Data\Managed");
         }
 
-        static void SearchInLibraries(string steamPath)
+        /// <summary>
+        /// Search inside [Steam install]\steamapps\libraryfolders.vdf for library folders
+        /// </summary>
+        /// <param name="steamPath">Steam install path</param>
+        /// <returns>The Subnautica managed path</returns>
+        static string SearchInLibrariesForPath(string steamPath)
         {
+            /*
+
+            This is an example of the libraryfolders.vdf that containts the locations of Steam libraries
+
+            0. "LibraryFolders"
+            1. {
+	        2.    "TimeNextStatsReport"		"1518738831"
+	        3.     "ContentStatsID"		"-8745987195671263442"
+	        4.     "1"		"D:\\SteamLibrary"
+	        5.     "2"		"F:\\SteamLibrary"
+            6. }
+
+
+            */
+
+            // Regex to match against the path string
+            var pathRegex = new Regex(@"^\s+""\d+""\s+""([^""]*)""");
+
+            // Read in the whole library file and search for the paths
             var libraryFileLines = File.ReadAllLines(steamPath + @"\steamapps\libraryfolders.vdf");
             var libraryPaths = libraryFileLines
-                .Where((line, index) => index > 3 && index < libraryFileLines.Length - 1)
+                .Where((line, index) => index >= 4 && index < libraryFileLines.Length - 1) // Filter between index [4, -1]
                 .Select(line =>
                 {
-                    var match = PathRegex.Match(line);
+                    var match = pathRegex.Match(line);
 
+                    // The first Groups item has the whole line, we want index 1 which has our path match group
                     return match.Groups[1].Value;
                 })
                 .ToArray();
 
+            // Search through all the paths for Subnautica
             foreach (var libraryPath in libraryPaths)
             {
                 string subnauticaManagedPath = GetSubnauticaManagedPath(libraryPath);
 
                 if (Directory.Exists(subnauticaManagedPath))
                 {
-                    BuildTargets(subnauticaManagedPath);
+                    // Found it!
+                    return subnauticaManagedPath;
                 }
             }
+
+            // No luck...
+            return null;
         }
 
-        static void BuildTargets(string subnauticaManagedPath)
+        /// <summary>
+        /// Update the [SolutionDir]\ManagedPath.targets file's &lt;SubnauticaPath&gt; location
+        /// </summary>
+        /// <param name="subnauticaManagedPath">Subnautica's Managed Assemblies path</param>
+        static void UpdateManagedPathTargets(string subnauticaManagedPath)
         {
-            Console.WriteLine(string.Format("Found Subnautica's managed data {0}", subnauticaManagedPath));
-            // Process XML file
+            Console.WriteLine(string.Format("Updating ManagedPath.targets with: {0}", subnauticaManagedPath));
 
-            string commonTargetsPath = @".\Common.targets";
-            var commonTargetsDocument = new XmlDocument();
-            commonTargetsDocument.Load(commonTargetsPath);
+            try
+            {
+                // Process it as an XML file
+                string localPath = Directory.GetCurrentDirectory();
+                string templateTargetsPath = localPath + @"\ManagedPath.targets.template";
+                string outputTargetsPath = localPath + @"\ManagedPath.targets";
 
-            var pathNode = commonTargetsDocument.GetElementsByTagName("SubnauticaPath").Item(0);
+                var managedTargetsDocument = new XmlDocument();
+                managedTargetsDocument.Load(templateTargetsPath);
 
-            pathNode.RemoveAll();
-            pathNode.AppendChild(commonTargetsDocument.CreateTextNode(subnauticaManagedPath));
+                var pathNode = managedTargetsDocument.GetElementsByTagName("SubnauticaPath").Item(0);
 
-            commonTargetsDocument.Save(commonTargetsPath);
+                // Clear the existing contents and put the new path in
+                pathNode.RemoveAll();
+                pathNode.AppendChild(managedTargetsDocument.CreateTextNode(subnauticaManagedPath));
 
-            Console.Write("Targets file updated! Press any key to continue.");
-            Console.ReadKey(true);
-            Environment.Exit(0);            
+                // Save
+                managedTargetsDocument.Save(outputTargetsPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Encountered an error while updating the ManagedPath.targets file:");
+                Console.WriteLine(e.StackTrace);
+                return;
+            }
+
+            // Success!
+            Console.WriteLine("ManagedPath.targets updated!");
         }
     }
 }

@@ -4,7 +4,7 @@
     <OriginalAssembly>$(SubnauticaPath)\Assembly-CSharp.dll.original</OriginalAssembly>
   </PropertyGroup>
 
-  <Target Name="RefreshAssembly" BeforeTargets="BeforeBuild" Condition="Exists($(OriginalAssembly))">
+  <Target Name="RefreshAssembly" BeforeTargets="BeforeBuild" Condition="'$(MSBuildProjectName)' != 'BuildHelper' AND Exists($(OriginalAssembly))">
     <Message Text="Refreshing assembly: $(OriginalAssembly)" Importance="high"/>
     <Copy SourceFiles="$(OriginalAssembly)" DestinationFiles="$(SubnauticaPath)\Assembly-CSharp.dll" Retries="0" ContinueOnError="true" />
   </Target>

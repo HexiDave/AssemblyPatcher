@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Reflection;
 using UnityEngine;
 
@@ -10,11 +9,9 @@ namespace BootstrapLib
 {
     public class Bootstrap
     {
-        static Bootstrap()
-        {
-            
-        }
-
+        /// <summary>
+        /// Get the path to the managed assembly directory
+        /// </summary>
         public static string AssemblyDirectory
         {
             get
@@ -26,8 +23,17 @@ namespace BootstrapLib
             }
         }
 
+        /// <summary>
+        /// This handler will resolve the Mod files' dependencies into the main managed assembly directory,
+        /// instead of their own local folders.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         static Assembly ModResolveHandler(object sender, ResolveEventArgs args)
         {
+            // TODO: Make sure if a mod needs its own assemblies locally they can be loaded - needs testing
+
             string dllName = args.Name.Split(new[] { ','}, StringSplitOptions.None)[0];
 
             return Assembly.LoadFile(AssemblyDirectory + dllName + ".dll");
@@ -38,6 +44,7 @@ namespace BootstrapLib
             // Make sure we resolve the DLL dependencies locally
             AppDomain.CurrentDomain.AssemblyResolve += resolveEventHandler;
 
+            // Find all the Mod assemblies - in the future, might use a table of contents file
             var modFiles = Directory.GetFiles(AssemblyDirectory + "\\Mods", "*Mod*.dll", SearchOption.AllDirectories);
 
             foreach (var modFile in modFiles)
@@ -57,10 +64,16 @@ namespace BootstrapLib
             AppDomain.CurrentDomain.AssemblyResolve -= resolveEventHandler;
         }
 
+        /// <summary>
+        /// Created for re-use between IMod and IPatch
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static List<Type> FindAllModsOf<T>()
         {
             List<Type> modsList = new List<Type>();
 
+            // Search through all the assemblies
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 try
@@ -69,36 +82,41 @@ namespace BootstrapLib
                     var checkModTypes = types.Where(t => typeof(T).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
                     modsList.AddRange(checkModTypes);
                 }
-                catch (Exception e)
+                catch
                 {
-                    //Debug.Log("Failed to check for mod types in: " + assembly.GetName());
-                    //Debug.Log(e);
+                    // TODO: We're swallowing this exception for now - revisit
                 }
             }
 
             return modsList;
         }
 
+        /// <summary>
+        /// This is the mod loading entry point.
+        /// It will load all mods and attach them to the game
+        /// </summary>
         static void Initialize()
         {
             Debug.Log("Bootstrap Initialize");
 
+            // Load the mod files
             LoadModAssemblies();
 
+            // Get all the mods
             var modTypes = FindAllModsOf<IMod>();
 
+            // Initialize each mod
             foreach (var modType in modTypes)
             {
                 var mod = (IMod)Activator.CreateInstance(modType);
                 try
                 {
-                    if (mod.InitializeMod())
-                    {
-                        mods.Add(mod);
-                    }
+                    mod.InitializeMod();
+                    mods.Add(mod);
                 } catch (Exception e)
                 {
                     Debug.Log("Failed to instantiate and initialize mod: " + modType.FullName);
+                    Debug.Log(e.StackTrace);
                 }
             }
         }

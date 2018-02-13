@@ -22,29 +22,34 @@ namespace ExampleMod
         IMethod TooltipFactory_WriteIngredients_Patch;
         MethodDef TooltipFactory_WriteIngredients_Original;
 
-        public bool InitializePatch(ModuleDefMD module)
+        public void InitializePatch(ModuleDefMD module)
         {
             Importer importer = new Importer(module);
+
+            // Import and store the patching methods
             CrafterLogic_IsCraftRecipeFulfilled_Patch = importer.Import(typeof(CrafterLogicHelper).GetMethod("IsCraftRecipeFulfilled"));
             CrafterLogic_ConsumeResources_Patch = importer.Import(typeof(CrafterLogicHelper).GetMethod("ConsumeResources"));
             Constructable_Construct_Patch = importer.Import(typeof(ConstructableHelper).GetMethod("Construct"));
             TooltipFactory_WriteIngredients_Patch = importer.Import(typeof(CrafterLogicHelper).GetMethod("WriteIngredients"));
 
-
+            // CrafterLogic
             var originalCrafterLogic = module.Find("CrafterLogic", false);
+
+            // Get the original methods we're going to replace
             CrafterLogic_IsCraftRecipeFulfilled_Original = originalCrafterLogic.FindMethod("IsCraftRecipeFulfilled");
             CrafterLogic_ConsumeResources_Original = originalCrafterLogic.FindMethod("ConsumeResources");
 
+            // Patch CrafterLogic
             Patch_CrafterLogic_IsCraftRecipeFulfilled(module);
 
+            // Patch Construtable
             Patch_Constructable_Construct(module);
 
+            // Patch the tooltip
             var originalTooltipFactory = module.Find("TooltipFactory", false);
             TooltipFactory_WriteIngredients_Original = originalTooltipFactory.FindMethod("WriteIngredients");
 
             Patch_Tooltip_WriteIngredients(module, originalTooltipFactory);
-
-            return true;
         }
 
         void Patch_CrafterLogic_IsCraftRecipeFulfilled(ModuleDef module)
@@ -70,6 +75,8 @@ namespace ExampleMod
         void Patch_Constructable_Construct(ModuleDef module)
         {
             var parentMethod = module.Find("Constructable", false).FindMethod("Construct");
+
+            // Just replace the call with the new static version
 
             parentMethod.Body = new CilBody();
 

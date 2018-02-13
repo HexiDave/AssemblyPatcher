@@ -1,24 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="CheckSubnauticaPath">
   <PropertyGroup>
-    <SubnauticaPath>D:\SteamLibrary\steamapps\common\Subnautica\Subnautica_Data\Managed</SubnauticaPath>
+    <ManagedPathTargets>$(SolutionDir)ManagedPath.targets</ManagedPathTargets>
+    <SubnauticaPath Condition="!Exists($(ManagedPathTargets))">C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed</SubnauticaPath>
   </PropertyGroup>
+
+  <Import Project="$(ManagedPathTargets)" Condition="Exists($(ManagedPathTargets))" />
+  
   <Target Name="SubnauticaPathInvalid" Condition="!Exists($(SubnauticaPath))">
     <Error Text="The Subnautica Managed folder path is invalid - please run the BuildHelper in this directory!" />
   </Target>
-  <Target Name="CheckSubnauticaPath" DependsOnTargets="SubnauticaPathInvalid" Condition="!Exists($(SubnauticaPath))">
+  
+  <Target Name="CheckSubnauticaPath" DependsOnTargets="SubnauticaPathInvalid" Condition="'$(MSBuildProjectName)' != 'BuildHelper' AND !Exists($(SubnauticaPath))">
   </Target>
+  
   <PropertyGroup Condition="$(Configuration) == 'Debug'">
     <OutputPath>$(SolutionDir)\bin\Debug\</OutputPath>
   </PropertyGroup>
+  
   <PropertyGroup Condition="$(Configuration) == 'Release'">
     <OutputPath>$(SolutionDir)\bin\Release\</OutputPath>
   </PropertyGroup>
-
+  
   <PropertyGroup Condition="$(MSBuildProjectName.Contains('Mod'))">
     <OutputPath>$(OutputPath)\Mods\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
-
+  
   <Import Project="$(SolutionDir)PreBuild.targets" />
   <Import Project="$(SolutionDir)PostBuild.targets" />
 </Project>

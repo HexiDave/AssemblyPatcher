@@ -112,11 +112,8 @@ namespace AssemblyPatcher
                 try
                 {
                     var patch = (IPatch)Activator.CreateInstance(modType);
-                    if (patch.InitializePatch(module))
-                    {
-                        Console.WriteLine("Successfully installed patch for " + modType.FullName);
-                    }
-
+                    patch.InitializePatch(module);
+                    Console.WriteLine("Successfully installed patch for " + modType.FullName);
                 } catch (Exception e)
                 {
                     Console.WriteLine("Failed to patch: " + modType.FullName);

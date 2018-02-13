@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="ConstructableHelper.cs" />
     <Compile Include="CrafterLogicHelper.cs" />
-    <Compile Include="ExampleMod.cs" />
     <Compile Include="MoreQuickSlotsPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PullFromContainersPatch.cs" />

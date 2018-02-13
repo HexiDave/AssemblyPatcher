@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
 
 namespace BootstrapLib
 {
+    /// <summary>
+    /// Base interface for all static patch libraries
+    /// </summary>
     public interface IPatch
     {
-        bool InitializePatch(ModuleDefMD module);
+        /// <summary>
+        /// Entry point for all static patch libraries
+        /// </summary>
+        /// <param name="module">Loaded assembly module to be patched</param>
+        void InitializePatch(ModuleDefMD module);
     }
 }

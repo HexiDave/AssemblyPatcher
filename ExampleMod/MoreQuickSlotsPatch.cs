@@ -9,7 +9,10 @@ namespace ExampleMod
 {
     class MoreQuickSlotsPatch : BootstrapLib.IPatch
     {
+        // Currently there are 5 slots
         static int TopExistingSlot = 5;
+
+        // Change this to add a certain number of slots
         static int QuickSlotsToAdd = 5;
         static string[] DefaultKeysForSlots =
         {
@@ -22,10 +25,9 @@ namespace ExampleMod
             "="
         };
 
-        public bool InitializePatch(ModuleDefMD module)
+        public void InitializePatch(ModuleDefMD module)
         {
             CreateButtonSlotEnums(module);
-            return true;
         }
 
         public void CreateButtonSlotEnums(ModuleDef module)
@@ -102,7 +104,7 @@ namespace ExampleMod
 
         public void RebuildPlayerQuickSlotList(ModuleDef module, int totalQuickSlots, IList<FieldDef> buttonTypeFields)
         {
-            // FIXME: There's a serious problem when decompiling the Player static constructor - it just explode.
+            // FIXME: There's a serious problem when decompiling the Player static constructor - it just explodes.
             // For now, I'm just building a new one from scratch - a new game in Creative Mode will not have the starting gear.
 
             // Player
@@ -141,15 +143,11 @@ namespace ExampleMod
                     .First();
                 var slotValue = (int)slotField.Constant.Value;
 
-                //                ldc.i4.0
-                //117 015E    ldc.i4.8
-                //118 015F    stelem.i4
-                //119 0160    dup
-
                 instructions.Add(OpCodes.Ldc_I4.ToInstruction(i));
                 instructions.Add(OpCodes.Ldc_I4.ToInstruction(slotValue));
                 instructions.Add(OpCodes.Stelem_I4.ToInstruction());
-                // Skip on the last round
+
+                // Skip on the last round due to how the Buttons vs names are coded in Subnautica
                 if (i + 1 < totalQuickSlots)
                 {
                     instructions.Add(OpCodes.Dup.ToInstruction());

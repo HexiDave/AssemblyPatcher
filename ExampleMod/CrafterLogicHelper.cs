@@ -7,6 +7,7 @@ namespace ExampleMod
 {
     public static class CrafterLogicHelper
     {
+        // Change this to adjust the max distance from the player a container can be found within
         readonly static float MaxDistance = 100f;
         readonly static float MaxDistanceSq = MaxDistance * MaxDistance;
 
@@ -14,25 +15,45 @@ namespace ExampleMod
 
         static ItemsContainer[] nearbyItemContainers;
 
+        /// <summary>
+        /// This finds all the containers - plus your inventory - to pull resources from
+        /// </summary>
+        /// <returns>All the containers</returns>
         public static ItemsContainer[] FindAllItemsContainersInRange()
         {
+            // We use this time-based hack to cache the results since it would require changes in many more files to do it top-down
             if (DayNightCycle.main.timePassed > 1.0 + lastContainerCheckTime || nearbyItemContainers == null)
             {
-                StorageContainer[] array = UnityEngine.Object.FindObjectsOfType<StorageContainer>();
-                List<ItemsContainer> list = new List<ItemsContainer>();
-                foreach (StorageContainer storageContainer in array)
+                // Let Unity to the initial leg-work
+                var allStorageContainers = UnityEngine.Object.FindObjectsOfType<StorageContainer>();
+
+                var list = new List<ItemsContainer>();
+                foreach (StorageContainer storageContainer in allStorageContainers)
                 {
+                    // Check that it has a real container and is near enough to the player
                     if (storageContainer.container != null && (Player.main.transform.position - storageContainer.transform.position).sqrMagnitude < MaxDistanceSq)
                     {
                         list.Add(storageContainer.container);
                     }
                 }
+
+                // Add the player's inventory container
                 list.Add(Inventory.main.container);
+
+                // Convert it to prevent List changes
                 nearbyItemContainers = list.ToArray();
+
+                // Timestamp it
                 lastContainerCheckTime = DayNightCycle.main.timePassed;
             }
+
+            // Return the cached value
             return nearbyItemContainers;
         }
+
+        /*
+         * These functions are reproductions that use the FindAllItemsContainersInRange function instead of the default Inventory.main container
+         */
 
         public static int GetTotalPickupCount(TechType techType, ItemsContainer[] itemContainers)
         {

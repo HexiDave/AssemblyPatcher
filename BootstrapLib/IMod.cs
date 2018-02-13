@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace BootstrapLib
+﻿namespace BootstrapLib
 {
+
+    /// <summary>
+    /// For future use - will be for in-memory mods instead of IPatch for static patching.
+    /// </summary>
     public interface IMod
     {
-        bool InitializeMod();
+        void InitializeMod();
     }
 }
