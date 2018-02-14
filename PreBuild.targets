@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OriginalAssembly>$(SubnauticaPath)\Assembly-CSharp.dll.original</OriginalAssembly>
+    <OriginalAssembly>$(SubnauticaManagedPath)\Assembly-CSharp.dll.original</OriginalAssembly>
   </PropertyGroup>
 
   <Target Name="RefreshAssembly" BeforeTargets="BeforeBuild" Condition="'$(MSBuildProjectName)' != 'BuildHelper' AND Exists($(OriginalAssembly))">
     <Message Text="Refreshing assembly: $(OriginalAssembly)" Importance="high"/>
-    <Copy SourceFiles="$(OriginalAssembly)" DestinationFiles="$(SubnauticaPath)\Assembly-CSharp.dll" Retries="0" ContinueOnError="true" />
+    <Copy SourceFiles="$(OriginalAssembly)" DestinationFiles="$(SubnauticaManagedPath)\Assembly-CSharp.dll" Retries="0" ContinueOnError="true" />
   </Target>
 </Project>

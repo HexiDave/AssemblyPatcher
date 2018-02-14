@@ -4,23 +4,42 @@ using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using BootstrapLib;
+using System.Reflection;
 
 namespace AssemblyPatcher
 {
     class Program
     {
-        static string MainAssemblyName = "Assembly-CSharp.dll";
-        static string OriginalMainAssemblyName = GetOriginalName(MainAssemblyName);
+        static readonly string ManagedPath = @".\Subnautica_Data\Managed\";
+        static readonly string MainAssemblyName = "Assembly-CSharp";
+        static readonly string MainAssemblyFileName = MainAssemblyName + ".dll";
+        static readonly string OriginalMainAssemblyFileName = GetOriginalFileName(MainAssemblyFileName);
+        static Assembly MainAssembly;
 
-        public static string GetOriginalName(string assemblyName)
+        /// <summary>
+        /// Get the path to the managed assembly directory. 
+        /// NOTE: This is duplicated here because BootstrapLib would need to be loaded which would cause an infinite loop of loading.
+        /// </summary>
+        static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
+        static string GetOriginalFileName(string assemblyName)
         {
             return assemblyName + ".original";
         }
 
-        public static void PrepareAssemblyBackup(string assemblyName, string assemblyBackupName)
+        static void PrepareAssemblyBackup(string assemblyName, string assemblyBackupName)
         {
-            string originalAssemblyPath = @".\" + assemblyBackupName;
-            string assemblyPath = @".\" + assemblyName;
+            string originalAssemblyPath = ManagedPath + assemblyBackupName;
+            string assemblyPath = ManagedPath + assemblyName;
 
             if (!File.Exists(originalAssemblyPath))
             {
@@ -37,13 +56,16 @@ namespace AssemblyPatcher
 
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += Patcher_AssemblyResolver;
+
             try
             {
                 PatchMainAssembly();
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to patch the main assembly file:");
+                Console.WriteLine("Failed to patch the main assembly file:\n");
+                Console.WriteLine(e.Message);
                 Console.Write(e.StackTrace);
                 Console.ReadKey(true);
                 return;
@@ -53,12 +75,33 @@ namespace AssemblyPatcher
             Console.ReadKey(true);
         }
 
+        static Assembly Patcher_AssemblyResolver(object sender, ResolveEventArgs args)
+        {
+            string assemblyName = args.Name.Split(new[] { ','}, StringSplitOptions.None)[0];
+
+            if (assemblyName == "Assembly-CSharp")
+            {
+                return MainAssembly;
+            }
+
+            var assemblyPath = AssemblyDirectory + ManagedPath + assemblyName + ".dll";
+
+            bool exists = File.Exists(assemblyPath);
+
+            return Assembly.LoadFile(assemblyPath);
+        }
+
         static void PatchMainAssembly()
         {
-            PrepareAssemblyBackup(MainAssemblyName, OriginalMainAssemblyName);
+            PrepareAssemblyBackup(MainAssemblyFileName, OriginalMainAssemblyFileName);
+
+            // Manually load the assembly to avoid needing to overwrite a loaded assembly
+            var assemblyData = File.ReadAllBytes(ManagedPath + OriginalMainAssemblyFileName);
+
+            MainAssembly = Assembly.Load(assemblyData);
 
             // Load the assembly file to be patched
-            var assemblyModule = ModuleDefMD.Load(OriginalMainAssemblyName);
+            var assemblyModule = ModuleDefMD.Load(assemblyData);
 
             // Find the GameInput.Awake() method to use as a launcher for the mod bootstrapper
             var gameInputAwake = assemblyModule.GetTypes().Single(s => s.Name == "GameInput").FindMethod("Awake");
@@ -66,7 +109,7 @@ namespace AssemblyPatcher
             // Initialize the Importer and grab the BootstrapLib.Bootstrap.Initialize() method - which collects and starts the mods
             Importer importer = new Importer(assemblyModule);
             ITypeDefOrRef bootstraperRef = importer.Import(typeof(BootstrapLib.Bootstrap));
-            IMethod bootstrapInitialize = importer.Import(typeof(BootstrapLib.Bootstrap).GetMethod("Initialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic));
+            IMethod bootstrapInitialize = importer.Import(typeof(BootstrapLib.Bootstrap).GetMethod("Initialize", BindingFlags.Static | BindingFlags.NonPublic));
 
             // Find the IL code instruction point to insert after:
             /*
@@ -98,7 +141,7 @@ namespace AssemblyPatcher
             PatchMods(assemblyModule);
 
             // Same the assembly - overwriting Assembly-CSharp.dll and leaving the .original backup pristine
-            assemblyModule.Write(MainAssemblyName);
+            assemblyModule.Write(ManagedPath + MainAssemblyFileName);
         }
 
         static void PatchMods(ModuleDefMD module)

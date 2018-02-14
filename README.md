@@ -19,19 +19,23 @@ In order to go from nothing to patching, you'll need:
 
 ### Installing
 
+Extract to your Subnautica folder - overwrite if it asks (it's only adding the **Mods** folder to **Subnautica\Subnautica_Data\Managed**). Then run **AssemblyPatcher.exe** to apply changes - you will need to do this if the game updates or you add new mods. In the future, there will be a UI to handle installation of mods.
+
+### Building
+
 Start by cloning the repository
 
 ```
 git clone --recurse-submodules git://github.com/HexiDave/AssemblyPatcher.git
 ```
 
-Open the folder you cloned into and run the **BuildHelper.exe**. This will search out and set your Subnautica folder for the build system to reference. If you're wary of running it, you can copy the **ManagedPath.targets.template** to **ManagedPath.targets** and change it as follows:
+Open the folder you cloned into and run the **BuildHelper.exe**. This will search out and set your Subnautica folder for the build system to reference. If you're wary of running it, you can copy the **SubnauticaPath.targets.template** to **SubnauticaPath.targets** and change it as follows:
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <SubnauticaPath>**SET THIS: [Steam library]\steamapps\common\Subnautica\Subnautica_Data\Managed**</SubnauticaPath>
+    <SubnauticaPath>**SET THIS: [Steam library]\steamapps\common\Subnautica**</SubnauticaPath>
   </PropertyGroup>
 </Project>
 ```

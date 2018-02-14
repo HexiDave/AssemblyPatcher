@@ -9,6 +9,8 @@ namespace BootstrapLib
 {
     public class Bootstrap
     {
+        public static string ManagedPath = @".\Subnautica_Data\Managed\";
+
         /// <summary>
         /// Get the path to the managed assembly directory
         /// </summary>
@@ -32,18 +34,13 @@ namespace BootstrapLib
         /// <returns></returns>
         static Assembly ModResolveHandler(object sender, ResolveEventArgs args)
         {
-            // TODO: Make sure if a mod needs its own assemblies locally they can be loaded - needs testing
+            string assemblyName = args.Name.Split(new[] { ',' }, StringSplitOptions.None)[0];
 
-            string dllName = args.Name.Split(new[] { ','}, StringSplitOptions.None)[0];
-
-            return Assembly.LoadFile(AssemblyDirectory + dllName + ".dll");
+            return Assembly.LoadFile(AssemblyDirectory + ManagedPath + assemblyName + ".dll");
         }
 
         public static void LoadModAssemblies()
         {
-            // Make sure we resolve the DLL dependencies locally
-            AppDomain.CurrentDomain.AssemblyResolve += resolveEventHandler;
-
             // Find all the Mod assemblies - in the future, might use a table of contents file
             var modFiles = Directory.GetFiles(AssemblyDirectory + "\\Mods", "*Mod*.dll", SearchOption.AllDirectories);
 
@@ -59,9 +56,6 @@ namespace BootstrapLib
                     Debug.Log(e);
                 }
             }
-
-            // Cleanup
-            AppDomain.CurrentDomain.AssemblyResolve -= resolveEventHandler;
         }
 
         /// <summary>
@@ -97,6 +91,8 @@ namespace BootstrapLib
         /// </summary>
         static void Initialize()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += ModResolveHandler;
+
             Debug.Log("Bootstrap Initialize");
 
             // Load the mod files
@@ -119,9 +115,9 @@ namespace BootstrapLib
                     Debug.Log(e.StackTrace);
                 }
             }
-        }
 
-        private static ResolveEventHandler resolveEventHandler = new ResolveEventHandler(ModResolveHandler);
+            AppDomain.CurrentDomain.AssemblyResolve -= ModResolveHandler;
+        }
 
         private static List<IMod> mods = new List<IMod>();
     }

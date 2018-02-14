@@ -38,7 +38,7 @@ namespace BuildHelper
                 {
                     // Wanna know what this program does
                     case "/?":
-                        Console.WriteLine("Finds the Subnautica folder and updates ManagedPath.targets with it's location.");
+                        Console.WriteLine("Finds the Subnautica folder and updates SubnauticaPath.targets with it's location.");
                         Console.WriteLine("\n\nUse /n or /nowait to skip the wait on completion");
                         return (int)ExitCode.Formal;
                     case "/n":
@@ -87,20 +87,20 @@ namespace BuildHelper
             }
 
             // Try the standard path at the install location
-            string subnauticaManagedPath = GetSubnauticaManagedPath(steamPath);
+            string subnauticaPath = GetSubnauticaPath(steamPath);
 
             // Not in the normal place
-            if (!Directory.Exists(subnauticaManagedPath))
+            if (!Directory.Exists(subnauticaPath))
             {
                 // Time to get fancy...
-                subnauticaManagedPath = SearchInLibrariesForPath(steamPath);
+                subnauticaPath = SearchInLibrariesForPath(steamPath);
             }
 
             // Found a valid path
-            if (subnauticaManagedPath != null)
+            if (subnauticaPath != null)
             {
-                // Update the ManagedPath.targets file
-                UpdateManagedPathTargets(subnauticaManagedPath);
+                // Update the SubnauticaPath.targets file
+                UpdatePathTargets(subnauticaPath);
                 return true;
             }
 
@@ -127,9 +127,9 @@ namespace BuildHelper
         /// </summary>
         /// <param name="libraryPath">Steam library path</param>
         /// <returns></returns>
-        static string GetSubnauticaManagedPath(string libraryPath)
+        static string GetSubnauticaPath(string libraryPath)
         {
-            return Path.GetFullPath(libraryPath + @"\steamapps\common\Subnautica\Subnautica_Data\Managed");
+            return Path.GetFullPath(libraryPath + @"\steamapps\common\Subnautica");
         }
 
         /// <summary>
@@ -173,12 +173,12 @@ namespace BuildHelper
             // Search through all the paths for Subnautica
             foreach (var libraryPath in libraryPaths)
             {
-                string subnauticaManagedPath = GetSubnauticaManagedPath(libraryPath);
+                string subnauticaPath = GetSubnauticaPath(libraryPath);
 
-                if (Directory.Exists(subnauticaManagedPath))
+                if (Directory.Exists(subnauticaPath))
                 {
                     // Found it!
-                    return subnauticaManagedPath;
+                    return subnauticaPath;
                 }
             }
 
@@ -187,41 +187,41 @@ namespace BuildHelper
         }
 
         /// <summary>
-        /// Update the [SolutionDir]\ManagedPath.targets file's &lt;SubnauticaPath&gt; location
+        /// Update the [SolutionDir]\SubnauticaPath.targets file's &lt;SubnauticaPath&gt; location
         /// </summary>
-        /// <param name="subnauticaManagedPath">Subnautica's Managed Assemblies path</param>
-        static void UpdateManagedPathTargets(string subnauticaManagedPath)
+        /// <param name="subnauticaPath">Subnautica's path</param>
+        static void UpdatePathTargets(string subnauticaPath)
         {
-            Console.WriteLine(string.Format("Updating ManagedPath.targets with: {0}", subnauticaManagedPath));
+            Console.WriteLine(string.Format("Updating SubnauticaPath.targets with: {0}", subnauticaPath));
 
             try
             {
                 // Process it as an XML file
                 string localPath = Directory.GetCurrentDirectory();
-                string templateTargetsPath = localPath + @"\ManagedPath.targets.template";
-                string outputTargetsPath = localPath + @"\ManagedPath.targets";
+                string templateTargetsPath = localPath + @"\SubnauticaPath.targets.template";
+                string outputTargetsPath = localPath + @"\SubnauticaPath.targets";
 
-                var managedTargetsDocument = new XmlDocument();
-                managedTargetsDocument.Load(templateTargetsPath);
+                var subnauticaTargetsDocument = new XmlDocument();
+                subnauticaTargetsDocument.Load(templateTargetsPath);
 
-                var pathNode = managedTargetsDocument.GetElementsByTagName("SubnauticaPath").Item(0);
+                var pathNode = subnauticaTargetsDocument.GetElementsByTagName("SubnauticaPath").Item(0);
 
                 // Clear the existing contents and put the new path in
                 pathNode.RemoveAll();
-                pathNode.AppendChild(managedTargetsDocument.CreateTextNode(subnauticaManagedPath));
+                pathNode.AppendChild(subnauticaTargetsDocument.CreateTextNode(subnauticaPath));
 
                 // Save
-                managedTargetsDocument.Save(outputTargetsPath);
+                subnauticaTargetsDocument.Save(outputTargetsPath);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Encountered an error while updating the ManagedPath.targets file:");
+                Console.WriteLine("Encountered an error while updating the SubnauticaPath.targets file:");
                 Console.WriteLine(e.StackTrace);
                 return;
             }
 
             // Success!
-            Console.WriteLine("ManagedPath.targets updated!");
+            Console.WriteLine("SubnauticaPath.targets updated!");
         }
     }
 }

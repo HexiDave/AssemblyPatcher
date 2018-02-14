@@ -1,14 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="CheckSubnauticaPath">
   <PropertyGroup>
-    <ManagedPathTargets>$(SolutionDir)ManagedPath.targets</ManagedPathTargets>
-    <SubnauticaPath Condition="!Exists($(ManagedPathTargets))">C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed</SubnauticaPath>
+    <SubnauticaPathTargets>$(SolutionDir)SubnauticaPath.targets</SubnauticaPathTargets>
+    <SubnauticaPath Condition="!Exists($(SubnauticaPathTargets))">C:\Program Files (x86)\Steam\steamapps\common\Subnautica</SubnauticaPath>
   </PropertyGroup>
 
-  <Import Project="$(ManagedPathTargets)" Condition="Exists($(ManagedPathTargets))" />
+  <Import Project="$(SubnauticaPathTargets)" Condition="Exists($(SubnauticaPathTargets))" />
+
+  <PropertyGroup>
+    <SubnauticaManagedPath>$(SubnauticaPath)\Subnautica_Data\Managed</SubnauticaManagedPath>
+  </PropertyGroup>
   
   <Target Name="SubnauticaPathInvalid" Condition="!Exists($(SubnauticaPath))">
-    <Error Text="The Subnautica Managed folder path is invalid - please run the BuildHelper in this directory!" />
+    <Error Text="The Subnautica folder path is invalid - please run the BuildHelper in this directory!" />
   </Target>
   
   <Target Name="CheckSubnauticaPath" DependsOnTargets="SubnauticaPathInvalid" Condition="'$(MSBuildProjectName)' != 'BuildHelper' AND !Exists($(SubnauticaPath))">
