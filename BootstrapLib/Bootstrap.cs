@@ -42,7 +42,7 @@ namespace BootstrapLib
         public static void LoadModAssemblies()
         {
             // Find all the Mod assemblies - in the future, might use a table of contents file
-            var modFiles = Directory.GetFiles(AssemblyDirectory + "\\Mods", "*Mod*.dll", SearchOption.AllDirectories);
+            var modFiles = Directory.GetFiles(AssemblyDirectory + "\\Mods", "*.dll", SearchOption.AllDirectories);
 
             foreach (var modFile in modFiles)
             {

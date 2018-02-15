@@ -4,6 +4,10 @@
 # The template path output for the build system - re-created by BuildHelper
 SubnauticaPath.targets
 
+# Mods that aren't included
+Mods/*
+!Mods/Mods.md
+
 # User-specific files
 *.suo
 *.user

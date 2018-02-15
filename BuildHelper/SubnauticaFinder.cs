@@ -5,73 +5,11 @@ using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-/**
- * This program is designed to seek out the Steam install of Subnautica for the Managed Assemblies directory. 
- * If found, it will then update the Visual Studio solution's build system to use it instead of manually updating it.
- */
-
 namespace BuildHelper
 {
-    class Program
+    public class SubnauticaFinder : EventLogger
     {
-        /// <summary>
-        /// Magic numbers are bad - let's have some exit codes
-        /// </summary>
-        enum ExitCode
-        {
-            Success = 0,
-
-            // Just reporting info, not really an error
-            Formal,
-
-            Error = -1
-        }
-
-        static int Main(string[] args)
-        {
-            bool waitBeforeExit = true;
-
-            // Check for arguments
-            if (args != null && args.Length != 0)
-            {
-                switch(args[0].ToLower())
-                {
-                    // Wanna know what this program does
-                    case "/?":
-                        Console.WriteLine("Finds the Subnautica folder and updates SubnauticaPath.targets with it's location.");
-                        Console.WriteLine("\n\nUse /n or /nowait to skip the wait on completion");
-                        return (int)ExitCode.Formal;
-                    case "/n":
-                    case "/nowait":
-                        // Useful for automation
-                        waitBeforeExit = false;
-                        break;
-                    default:
-                        Console.WriteLine(string.Format("Unknown argument: {0}", args[0]));
-                        Console.WriteLine("Aborting...");
-
-                        return (int)ExitCode.Error;
-                }
-            }
-
-            // Let's go!
-            bool result = Start();
-
-            Console.Write("\nPress any key to continue.");
-
-            // Just in case this is launched from outside a console - give the user time to see what happened
-            if (waitBeforeExit)
-            {
-                Console.ReadKey(true);
-            }
-
-            return (int)(result ? ExitCode.Success : ExitCode.Error);
-        }
-
-        /// <summary>
-        /// Start searching for the Subnautica install to update the ManagedPath.targets path
-        /// </summary>
-        static bool Start()
+        public bool Start()
         {
             string steamPath;
             try
@@ -82,7 +20,7 @@ namespace BuildHelper
             catch
             {
                 // Busted install or security problem? Either way, we're not being helpful today.
-                Console.WriteLine("Failed to get the Steam install path from the registry - Aborting.");
+                LogEvent("Failed to get the Steam install path from the registry - Aborting.");
                 return false;
             }
 
@@ -100,12 +38,11 @@ namespace BuildHelper
             if (subnauticaPath != null)
             {
                 // Update the SubnauticaPath.targets file
-                UpdatePathTargets(subnauticaPath);
-                return true;
+                return UpdatePathTargets(subnauticaPath);
             }
 
             // Maybe some other type of Subnautica install or another issue.
-            Console.WriteLine("Failed to find a valid Subnautica install. You're on your own!");
+            LogEvent("Failed to find a valid Subnautica install. You're on your own!");
 
             return false;
         }
@@ -114,7 +51,7 @@ namespace BuildHelper
         /// Read the user Windows registry for the steam install
         /// </summary>
         /// <returns></returns>
-        static string GetSteamInstallPath()
+        public string GetSteamInstallPath()
         {
             using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam"))
             {
@@ -127,7 +64,7 @@ namespace BuildHelper
         /// </summary>
         /// <param name="libraryPath">Steam library path</param>
         /// <returns></returns>
-        static string GetSubnauticaPath(string libraryPath)
+        public string GetSubnauticaPath(string libraryPath)
         {
             return Path.GetFullPath(libraryPath + @"\steamapps\common\Subnautica");
         }
@@ -137,7 +74,7 @@ namespace BuildHelper
         /// </summary>
         /// <param name="steamPath">Steam install path</param>
         /// <returns>The Subnautica managed path</returns>
-        static string SearchInLibrariesForPath(string steamPath)
+        public string SearchInLibrariesForPath(string steamPath)
         {
             /*
 
@@ -190,9 +127,10 @@ namespace BuildHelper
         /// Update the [SolutionDir]\SubnauticaPath.targets file's &lt;SubnauticaPath&gt; location
         /// </summary>
         /// <param name="subnauticaPath">Subnautica's path</param>
-        static void UpdatePathTargets(string subnauticaPath)
+        /// <returns>Successful update</returns>
+        public bool UpdatePathTargets(string subnauticaPath)
         {
-            Console.WriteLine(string.Format("Updating SubnauticaPath.targets with: {0}", subnauticaPath));
+            LogEvent(string.Format("Updating SubnauticaPath.targets with: {0}", subnauticaPath));
 
             try
             {
@@ -215,13 +153,14 @@ namespace BuildHelper
             }
             catch (Exception e)
             {
-                Console.WriteLine("Encountered an error while updating the SubnauticaPath.targets file:");
-                Console.WriteLine(e.StackTrace);
-                return;
+                LogEvent("Encountered an error while updating the SubnauticaPath.targets file:");
+                LogEvent(e.StackTrace);
+                return false;
             }
 
             // Success!
-            Console.WriteLine("SubnauticaPath.targets updated!");
+            LogEvent("SubnauticaPath.targets updated!");
+            return true;
         }
     }
 }

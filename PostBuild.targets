@@ -4,7 +4,7 @@
     <CallTarget Condition="'$(MSBuildProjectName)' == 'AssemblyPatcher'" Targets="DeployPatcher"/>
     <CallTarget Condition="'$(MSBuildProjectName)' == 'BootstrapLib'" Targets="DeployBootstrapLib"/>
     <CallTarget Condition="'$(MSBuildProjectName)' == 'BuildHelper'" Targets="DeployBuildHelper"/>
-    <CallTarget Condition="$(MSBuildProjectName.Contains('Mod'))" Targets="DeployMods"/>
+    <CallTarget Condition="'$(IsAMod)' == 'true'" Targets="DeployMods"/>
   </Target>
 
   <Target Name="DeployPatcher">
@@ -25,7 +25,7 @@
       <BuildHelperFile Include="$(OutputPath)\$(TargetFileName)" />
     </ItemGroup>
     <Message Text="Copying BuildHelper to solution directory." Importance="high"/>
-    <Copy SourceFiles="@(BuildHelperFile)" DestinationFolder="$(SolutionDir)" Retries="0" ContinueOnError="true" />
+    <Copy SourceFiles="@(BuildHelperFile)" DestinationFolder="$(MSBuildThisFileDirectory)" Retries="0" ContinueOnError="true" />
   </Target>
   
   <Target Name="DeployMods">

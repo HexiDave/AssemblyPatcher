@@ -4,15 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyPatcher", "AssemblyPatcher\AssemblyPatcher.csproj", "{9A88B43E-E5C1-40C3-8F03-A501A9E392B5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{50CA72D6-6CE3-4458-986C-520A8BC31031} = {50CA72D6-6CE3-4458-986C-520A8BC31031}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dnlib", "Libraries\dnlib\src\dnlib.csproj", "{FDFC1237-143F-4919-8318-4926901F4639}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BootstrapLib", "BootstrapLib\BootstrapLib.csproj", "{7C239D7F-FB3F-45C8-9083-6302DC84DC2A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleMod", "ExampleMod\ExampleMod.csproj", "{50CA72D6-6CE3-4458-986C-520A8BC31031}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildHelper", "BuildHelper\BuildHelper.csproj", "{C4FDE3BB-6505-495B-AC81-06D3EA958236}"
 EndProject
@@ -34,10 +29,6 @@ Global
 		{7C239D7F-FB3F-45C8-9083-6302DC84DC2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C239D7F-FB3F-45C8-9083-6302DC84DC2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C239D7F-FB3F-45C8-9083-6302DC84DC2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50CA72D6-6CE3-4458-986C-520A8BC31031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50CA72D6-6CE3-4458-986C-520A8BC31031}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{50CA72D6-6CE3-4458-986C-520A8BC31031}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50CA72D6-6CE3-4458-986C-520A8BC31031}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C4FDE3BB-6505-495B-AC81-06D3EA958236}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C4FDE3BB-6505-495B-AC81-06D3EA958236}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4FDE3BB-6505-495B-AC81-06D3EA958236}.Release|Any CPU.ActiveCfg = Release|Any CPU

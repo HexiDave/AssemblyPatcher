@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="CheckSubnauticaPath">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="CheckSubnauticaPath">  
   <PropertyGroup>
-    <SubnauticaPathTargets>$(SolutionDir)SubnauticaPath.targets</SubnauticaPathTargets>
+    <SubnauticaPathTargets>$(MSBuildThisFileDirectory)SubnauticaPath.targets</SubnauticaPathTargets>
     <SubnauticaPath Condition="!Exists($(SubnauticaPathTargets))">C:\Program Files (x86)\Steam\steamapps\common\Subnautica</SubnauticaPath>
   </PropertyGroup>
 
@@ -19,17 +19,17 @@
   </Target>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug'">
-    <OutputPath>$(SolutionDir)\bin\Debug\</OutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)\bin\Debug\</OutputPath>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <OutputPath>$(SolutionDir)\bin\Release\</OutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)\bin\Release\</OutputPath>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(MSBuildProjectName.Contains('Mod'))">
     <OutputPath>$(OutputPath)\Mods\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
   
-  <Import Project="$(SolutionDir)PreBuild.targets" />
-  <Import Project="$(SolutionDir)PostBuild.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)PreBuild.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)PostBuild.targets" />
 </Project>
