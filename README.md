@@ -60,7 +60,7 @@ Building the mods should automatically put them into the Subnautica mods directo
 
 If you'd like to see some already existing mods, I've started a repository which you can use to experiment with. 
 
-[My mod repository](https://github.com/HexiDave/SubnauticaMods.git)
+* [My mod repository](https://github.com/HexiDave/SubnauticaMods.git)
 
 To add them to the build system, do the following in the **AssemblyPatcher\Mods** folder
 
