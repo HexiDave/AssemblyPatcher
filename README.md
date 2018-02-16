@@ -29,7 +29,7 @@ Start by cloning the repository
 git clone --recurse-submodules git://github.com/HexiDave/AssemblyPatcher.git
 ```
 
-Open the folder you cloned into and run the **BuildHelper.exe**. This will search out and set your Subnautica folder for the build system to reference. If you're wary of running it, you can copy the **SubnauticaPath.targets.template** to **SubnauticaPath.targets** and change it as follows:
+Open the folder you cloned into and run the **BuildHelper.exe**. Clicking **Initialize** will search out and set your Subnautica folder for the build system to reference. If you're wary of running it, you can copy the **SubnauticaPath.targets.template** to **SubnauticaPath.targets** and change it as follows:
 
 ```
 <?xml version="1.0" encoding="utf-8"?>
@@ -40,11 +40,21 @@ Open the folder you cloned into and run the **BuildHelper.exe**. This will searc
 </Project>
 ```
 
-Open the **AssemblyPatcher.sln** file and build it all. If you wish to ignore the **ExampleMod** patches, disable the project from building. 
+Open the **AssemblyPatcher.sln** file and build it all. 
 
 Once built, the solution will copy everything needed to your Subnautica folder. You can either go there and run the **AssemblyPatcher.exe**, or you can run it right from Visual Studio.
 
 If you encounter permission issues, make sure you don't have the game, dnSpy or something with the Assembly-CSharp.dll file loaded. It's also possible that Windows will complain about modifying files in Program Files - you can run manually copy the project files there manually or run Visual Studio in Admin mode. 
+
+## Modding
+
+To create your own Visual Studio Solution for creating mods, run **BuildHelper** and select _File -> New Mod_. Fill in the requested details and click **Create**. Your _Username_ is just a way to group your mods into one folder/solution file. Once it's created, you will find the solution in:
+
+```
+<AssemblyPatcherFolder>\Mods\<Username>\
+```
+
+Building the mods should automatically put them into the Subnautica mods directory, and you can then run the **AssemblyPatcher** in Subnautica's folder to include them to the game.
 
 ## Built With
 

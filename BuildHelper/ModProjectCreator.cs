@@ -13,7 +13,7 @@ namespace BuildHelper
 {
     public class ModProjectCreator : EventLogger
     {
-        //static readonly string SolutionBasePath = @"\AssemblyPatcher.sln";
+        static readonly string SubnauticaModsSolutionPath = @"SubnauticaMods.sln";
         static readonly string DnlibProjectPath = @"\Libraries\dnlib\src\dnlib.csproj";
         static readonly string BootstrapLibProjectPath = @"\BootstrapLib\BootstrapLib.csproj";
         static readonly string ModsBasePath = @"\Mods";
@@ -47,7 +47,7 @@ namespace BuildHelper
             }
 
             var solutionFolderPath = currentDirectory + string.Format(ModsBasePath + @"\{0}\", username);
-            var solutionFilePath = solutionFolderPath + string.Format(@"{0}.sln", username);
+            var solutionFilePath = solutionFolderPath + SubnauticaModsSolutionPath;
 
             var dte = (EnvDTE.DTE)System.Activator.CreateInstance(type);            
 
