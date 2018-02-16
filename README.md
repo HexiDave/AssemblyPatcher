@@ -56,6 +56,20 @@ To create your own Visual Studio Solution for creating mods, run **BuildHelper**
 
 Building the mods should automatically put them into the Subnautica mods directory, and you can then run the **AssemblyPatcher** in Subnautica's folder to include them to the game.
 
+## My Mods
+
+If you'd like to see some already existing mods, I've started a repository which you can use to experiment with. 
+
+[My mod repository](https://github.com/HexiDave/SubnauticaMods.git)
+
+To add them to the build system, do the following in the **AssemblyPatcher\Mods** folder
+
+```
+git clone https://github.com/HexiDave/SubnauticaMods.git HexiDave
+```
+
+This will put them into a named subdirectory to separate from your own. 
+
 ## Built With
 
 * [Visual Studio 2017 Community Edition](https://www.visualstudio.com/downloads/) - IDE and compiler
