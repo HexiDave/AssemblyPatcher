@@ -160,6 +160,7 @@ namespace AssemblyPatcher
                 } catch (Exception e)
                 {
                     Console.WriteLine("Failed to patch: " + modType.FullName);
+                    Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
                 }
             }
