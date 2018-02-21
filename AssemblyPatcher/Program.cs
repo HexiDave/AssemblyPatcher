@@ -56,6 +56,13 @@ namespace AssemblyPatcher
 
         static void Main(string[] args)
         {
+            // Copy mod folders that were drag-n-drop'd onto the patcher
+            if (args != null && args.Length > 0)
+            {
+                Console.WriteLine("Mods detected - copying...");
+                CopyModFolders(args);
+            }
+
             AppDomain.CurrentDomain.AssemblyResolve += Patcher_AssemblyResolver;
 
             try
@@ -73,6 +80,48 @@ namespace AssemblyPatcher
 
             Console.Write("Patching complete!");
             Console.ReadKey(true);
+        }
+
+        static void CopyModFolders(string[] args)
+        {
+            var baseModsFolder = AssemblyDirectory + ManagedPath + @"Mods\";
+
+            foreach (var path in args)
+            {
+                if (Directory.Exists(path))
+                {
+                    var modFolder = new DirectoryInfo(path).Name;
+
+                    Console.WriteLine("Copying mod directory: " + modFolder);
+
+                    RecursiveCopy(path, baseModsFolder + modFolder);
+                }
+            }
+        }
+
+        static void RecursiveCopy(string sourcePath, string destPath)
+        {
+            var sourceDir = new DirectoryInfo(sourcePath);
+
+            if (!Directory.Exists(destPath))
+            {
+                Directory.CreateDirectory(destPath);
+            }
+
+            var sourceFiles = sourceDir.GetFiles();
+            foreach (var file in sourceFiles)
+            {
+                var destFilePath = Path.Combine(destPath, file.Name);
+                file.CopyTo(destFilePath, true);
+            }
+
+            var sourceSubDirectories = sourceDir.GetDirectories();
+
+            foreach (var sourceSubDirectory in sourceSubDirectories)
+            {
+                var destSubPath = Path.Combine(destPath, sourceSubDirectory.Name);
+                RecursiveCopy(sourceSubDirectory.FullName, destSubPath);
+            }
         }
 
         static Assembly Patcher_AssemblyResolver(object sender, ResolveEventArgs args)
